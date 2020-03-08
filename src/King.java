@@ -9,6 +9,7 @@ public class King extends Piece {
         super(white);
     }
 
+    // check if piece can move from start to end
     public boolean canMove(Board board, Spot start, Spot end) {
         boolean withinRange = ((end.getFile() >=0 && end.getFile() < 8) && (end.getRow() >= 0 && end.getRow() < 8));
         boolean occupied = (end.getPiece() != null);
@@ -35,6 +36,7 @@ public class King extends Piece {
             return false;
     }
 
+    // check if king can still move
     public boolean canStillMove(Board board, Player player, Spot currentSpot) {
         Spot threateningPieceSpot = player.getThreateningPieceSpot(board);
         int threateningFileRelativeToKing = threateningPieceSpot.getFile() - player.getKingFile();
@@ -42,6 +44,7 @@ public class King extends Piece {
         int file = currentSpot.getFile();
         int row = currentSpot.getRow();
 
+        // check all directions
         boolean left; boolean right; boolean up; boolean down; boolean upperLeft; boolean upperRight;
         boolean lowerLeft; boolean lowerRight;
 
@@ -292,17 +295,18 @@ public class King extends Piece {
         }
     }
 
-
-
+    // return name of piece, WK - white king, BK - black king
     public String getName() {
         return isWhite() ? "WK" : "BK";
     }
 
+    // check if piece is king, overwrite method in Piece.java
     @Override
     public boolean isKing() {
         return true;
     }
 
+    // check if king can castle, overwrite method in Piece.java
     @Override
     public boolean canCastle(Board board, Spot start, Spot end) {
         // if king has not moved
@@ -349,17 +353,20 @@ public class King extends Piece {
         return false;
     }
 
+    // check if king has moved, overwrite method in Piece.java
     @Override
     public boolean hasNotMoved() {
         return this.notMoved == true;
     }
 
+    // check for possible opponent knight that can threaten king, overwrite method in Piece.java
     @Override
     public boolean checkOpponentKnight(Board board, Spot target) {
         int file = target.getFile();
         int row = target.getRow();
         List<Spot> spots = new ArrayList<>();
 
+        // put possible locations of knights into a list
         if (((file - 1) >= 0) && ((row - 2) >= 0)) {
             Spot spot1 = board.getBox(file - 1, row - 2);
             spots.add(spot1);
@@ -393,17 +400,21 @@ public class King extends Piece {
             spots.add(spot8);
         }
 
+        // looping through the list
         for (Spot spot : spots) {
             int spotFile = spot.getFile();
             int spotRow = spot.getRow();
             if ((spotFile < 8 && spotFile >= 0) && (spotRow < 8 && spotRow >= 0)) {
                 Piece piece = spot.getPiece();
+                // if the spot is occupied
                 if (piece != null) {
                     boolean sameColour = (piece.isWhite() == this.isWhite());
+                    // spot occupied by enemy knight
                     if (!sameColour && piece.isKnight()) {
                         checkedBy = board.getBox(spotFile, spotRow);
                         return false;
                     }
+                    // spot not occupied by enemy knight
                     else
                         return true;
                 }
@@ -414,21 +425,29 @@ public class King extends Piece {
         return true;
     }
 
+    // check below, overwrite method in Piece.java
     @Override
     public boolean checkOpponentLowerRow(Board board, Spot target) {
+        // if king is on the most bottom row, then not threatened
         if (target.getRow() == 0)
             return true;
         else {
+            // looping through the spot between king's row and the most bottom row
             for (int row = target.getRow() - 1; row >= 0; row--) {
                 if (board.getBox(target.getFile(), row).getPiece() != null) {
                     Piece piece = board.getBox(target.getFile(), row).getPiece();
                     boolean sameColour = piece.isWhite() == this.isWhite();
+                    // if the piece belongs to player, then king is not threatened
                     if (sameColour)
                         return true;
+                    // if belongs to opponent
                     else {
+                        // if piece is not a rook or piece is not a queen, then not threatened
                         if (!(piece.isRook() || piece.isQueen()))
                             return true;
+                        // else threatened
                         else {
+                            // the piece threatening king is updated as checkedBy
                             checkedBy = board.getBox(target.getFile(), row);
                             return false;
                         }
@@ -439,21 +458,30 @@ public class King extends Piece {
         return true;
     }
 
+    // check above, overwrite method in Piece.java
     @Override
     public boolean checkOpponentUpperRow(Board board, Spot target) {
+        // if king is on the uppermost row, then not threatened
         if (target.getRow() == 7)
             return true;
         else {
+            // looping through the spots between king's row and the uppermost row
             for (int row = target.getRow() + 1; row < 8; row++) {
+                // if the spot is occupied
                 if (board.getBox(target.getFile(), row).getPiece() != null) {
                     Piece piece = board.getBox(target.getFile(), row).getPiece();
                     boolean sameColour = piece.isWhite() == this.isWhite();
+                    // if piece belongs to player, then safe
                     if (sameColour)
                         return true;
+                    // piece belongs to oppenent
                     else {
+                        // if piece is not rook or not queen, then not threatened
                         if (!(piece.isRook() || piece.isQueen()))
                             return true;
+                        // else threatened
                         else {
+                            // the piece threatening king is updated as checkedBy
                             checkedBy = board.getBox(target.getFile(), row);
                             return false;
                         }
@@ -461,25 +489,34 @@ public class King extends Piece {
                 }
             }
         }
+        //  after looping through, and cannot find a spot that is occupied, then safe
         return true;
     }
 
+    // check left, overwrite method in Piece.java
     @Override
     public boolean checkOpponentLeftFile(Board board, Spot target) {
+        // if king is on the most left file, then not threatened
         if (target.getFile() == 0)
             return true;
         else {
+            // looping through the spots between king's file and the most left file
             for (int file = target.getFile() - 1; file >= 0; file--) {
                 if (board.getBox(file, target.getRow()).getPiece() != null) {
                     Piece piece = board.getBox(file, target.getRow()).getPiece();
                     boolean sameColour = (piece.isWhite() == this.isWhite());
-
+                    
+                    // if piece belongs to player, then not threatened
                     if (sameColour)
                         return true;
+                    // piece belongs to oppenent
                     else {
+                        // if piece is not rook or not queen, then not threatened
                         if (!(piece.isRook() || piece.isQueen()))
                             return true;
+                        // else threatened
                         else {
+                            // the piece threatening king is updated as checkedBy
                             checkedBy = board.getBox(file, target.getRow());
                             return false;
                         }
@@ -490,23 +527,31 @@ public class King extends Piece {
         return true;
     }
 
+    // check right, overwrite method in Piece.java
     @Override
     public boolean checkOpponentRightFile(Board board, Spot target) {
+        // if king is on the most right file, then not threatened
         if (target.getFile() == 7) {
             return true;
         }
         else {
+            // looping through the spots between king's file and the most right file
             for (int file = target.getFile() + 1; file < 8; file++) {
                 if (board.getBox(file, target.getRow()).getPiece() != null) {
                     Piece piece = board.getBox(file, target.getRow()).getPiece();
                     boolean sameColour = (piece.isWhite() == this.isWhite());
 
+                    // if piece belongs to player, then not threatened
                     if (sameColour)
                         return true;
+                    // piece belongs to oppenent
                     else {
+                        // if piece is not rook or not queen, then not threatened
                         if (!(piece.isRook() || piece.isQueen()))
                             return true;
+                        // else threatened
                         else {
+                            // the piece threatening king is updated as checkedBy
                             checkedBy = board.getBox(file, target.getRow());
                             return false;
                         }
@@ -517,6 +562,7 @@ public class King extends Piece {
         return true;
     }
 
+    // check upper left diagonal, overwrite method in Piece.java
     @Override
     public boolean checkOpponentUpperLeftDiagonal(Board board, Spot target) {
         int file = target.getFile() - 1;
@@ -554,6 +600,7 @@ public class King extends Piece {
                         else {
                             // if piece is bishop or queen, not safe
                             if (piece.isBishop() || piece.isQueen()) {
+                                // the piece threatening king is updated as checkedBy
                                 checkedBy = board.getBox(file, row);
                                 return false;
                             }
@@ -571,6 +618,7 @@ public class King extends Piece {
         return true;
     }
 
+    // check upper right diagonal, overwrite method in Piece.java
     @Override
     public boolean checkOpponentUpperRightDiagonal(Board board, Spot target) {
         int file = target.getFile() + 1;
@@ -608,6 +656,7 @@ public class King extends Piece {
                         else {
                             // if piece is bishop or queen, not safe
                             if (piece.isBishop() || piece.isQueen()) {
+                                // the piece threatening king is updated as checkedBy
                                 checkedBy = board.getBox(file, row);
                                 return false;
                             }
@@ -626,6 +675,7 @@ public class King extends Piece {
         return true;
     }
 
+    // check lower left diagonal, overwrite method in Piece.java
     @Override
     public boolean checkOpponentLowerLeftDiagonal(Board board, Spot target) {
         int file = target.getFile() - 1;
@@ -651,6 +701,7 @@ public class King extends Piece {
                             else {
                                 // piece is not pawn but is bishop or queen
                                 if (piece.isBishop() || piece.isQueen()) {
+                                    // the piece threatening king is updated as checkedBy
                                     checkedBy = board.getBox(file, row);
                                     return false;
                                 }
@@ -680,6 +731,7 @@ public class King extends Piece {
         return true;
     }
 
+    // check lower right diagonal, overwrite method in Piece.java
     @Override
     public boolean checkOpponentLowerRightDiagonal(Board board, Spot target) {
         int file = target.getFile() + 1;
@@ -705,6 +757,7 @@ public class King extends Piece {
                             else {
                                 // piece is not pawn but is bishop or queen
                                 if (piece.isBishop() || piece.isQueen()) {
+                                    // the piece threatening king is updated as checkedBy
                                     checkedBy = board.getBox(file, row);
                                     return false;
                                 }
@@ -734,6 +787,7 @@ public class King extends Piece {
         return true;
     }
 
+    // find the spot of the piece checking the king
     public Spot getCheckedBy() {
         return checkedBy;
     }
