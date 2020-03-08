@@ -33,6 +33,14 @@ public class Player {
     public boolean isWhite() {
         return this.white == true;
     }
+    
+    public int getPiecesLeft() {
+        return piecesLeft;
+    }
+
+    public void setPiecesLeft(int piecesLeft) {
+        this.piecesLeft = piecesLeft;
+    }
 
     // return if the king is being checked
     public boolean notChecked(Board board) {
@@ -133,10 +141,12 @@ public class Player {
         }
     }
 
+    // promote pawn
     public void promote(Piece piece, Spot end) {
         if (piece.canPromote(end)) {
             Scanner scanner = new Scanner(System.in);
             System.out.println("Promote pawn to: Q-Queen, R-Rook, B-Bishop or N-Knight?");
+            // prompt player to select promotion
             String choice = scanner.next();
             switch (choice) {
                 case "Q":
@@ -155,15 +165,7 @@ public class Player {
         }
     }
 
-    public boolean isStalemated(Board board, Player player) {
-        Spot kingSpot = board.getBox(kingFile, kingRow);
-        King king = (King) kingSpot.getPiece();
-
-        boolean isStalemate = !(king.canStillMove(board, player, kingSpot));
-
-        return isStalemate;
-    }
-
+    // check if player is checkmated
     public boolean isCheckmated(Board board, Player player) {
         Spot kingSpot = board.getBox(kingFile, kingRow);
         King king = (King) kingSpot.getPiece();
@@ -173,24 +175,29 @@ public class Player {
         return isCheckmate;
     }
 
+    // check if can block piece threatening king
     public boolean canBlockThreateningPiece(Board board, Player player) {
         Spot threateningPieceSpot = player.getThreateningPieceSpot(board);
         Piece threateningPiece = player.getThreateningPieceSpot(board).getPiece();
         // if threatening piece is knight or pawn, cannot block, only option is to move away or to capture the piece
         if (threateningPiece.isKnight() || threateningPiece.isPawn())
             return false;
+        // not knight or pawn
         else {
             if (threateningPiece.isQueen()) {
                 int fileDiff = Math.abs(threateningPieceSpot.getFile() - player.getKingFile());
                 int rowDiff = Math.abs(threateningPieceSpot.getRow() - player.getKingRow());
 
+                // if diagonal
                 if (fileDiff == rowDiff) {
                     return tryToBlockDiagonals(board, player);
                 }
+                // if cross directions
                 else {
                     return tryToBlockCross(board, player);
                 }
             }
+            // not queen
             else {
                 if (threateningPiece.isRook()) {
                     return tryToBlockCross(board, player);
@@ -206,6 +213,7 @@ public class Player {
         }
     }
 
+    // check if can capture piece threatening king
     public boolean canCaptureThreateningPiece(Board board, Player player) {
         Spot threateningPieceSpot = player.getThreateningPieceSpot(board);
 
@@ -215,6 +223,7 @@ public class Player {
         return canCapture;
     }
 
+    // check if king can capture threatening piece
     public boolean canKingCapture(Board board, Player player) {
         int file = player.getThreateningPieceSpot(board).getFile();
         int row = player.getThreateningPieceSpot(board).getRow();
@@ -231,6 +240,7 @@ public class Player {
         return false;
     }
 
+    // check if can block in cross direction(up, down, left, right)
     public boolean tryToBlockCross(Board board, Player player) {
         Spot threateningPieceSpot = player.getThreateningPieceSpot(board);
 
@@ -275,11 +285,13 @@ public class Player {
         return false;
     }
 
+    // get the spot of the piece threatening king
     public Spot getThreateningPieceSpot(Board board) {
         King king = (King) board.getBox(getKingFile(), getKingRow()).getPiece();
         return king.getCheckedBy();
     }
 
+    // check if can block in diagonals(upperLeft, upperRight, lowerLeft, lowerRight)
     public boolean tryToBlockDiagonals(Board board, Player player) {
         Spot threateningPieceSpot = player.getThreateningPieceSpot(board);
 
@@ -333,14 +345,7 @@ public class Player {
         }
     }
 
-    public int getPiecesLeft() {
-        return piecesLeft;
-    }
-
-    public void setPiecesLeft(int piecesLeft) {
-        this.piecesLeft = piecesLeft;
-    }
-
+    // check if piece captured opponent's piece
     public boolean captureOpponentPieces(Board board, Player player, Spot target) {
         if (target.getPiece().isWhite() != player.isWhite())
             return true;
