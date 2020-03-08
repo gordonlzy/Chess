@@ -1,4 +1,5 @@
 public class Board {
+    // create a 8 x 8 board
     Spot[][] boxes = new Spot[8][8];
 
     public Board() {
@@ -45,10 +46,13 @@ public class Board {
             }
         }
     }
-
+    
+    // print the board
     public void printBoard() {
+        // print name of files
         System.out.println("   _0_ _1_ _2_ _3_ _4_ _5_ _6_ _7_ ");
         for (int row = 7; row >= 0; row--) {
+            // print name of rows
             System.out.printf("%d |", row);
             for (int file = 0; file < 8; file++) {
                 if (boxes[file][row].getPiece() == null)
@@ -60,6 +64,7 @@ public class Board {
         }
     }
 
+    // get the spot from file and row
     public Spot getBox(int file, int row) {
         return boxes[file][row];
     }
