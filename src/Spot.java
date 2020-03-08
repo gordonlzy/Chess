@@ -12,6 +12,7 @@ public class Spot {
         this.row = row;
     }
 
+    // getters and setters
     public Piece getPiece() {
         return piece;
     }
@@ -36,6 +37,7 @@ public class Spot {
         this.row = row;
     }
 
+    // check if a spot is accessible to pieces that belong to player
     public boolean isAccessibleToOwn(Board board, Player player, Spot end) {
         // check file
         boolean isFileAccessible = checkOwnFile(board, player, end);
@@ -53,16 +55,20 @@ public class Spot {
                 (isLowerLeftAccessible) || (isLowerRightAccessible) || (isKnightAccessible));
     }
 
+    // check if possible spot can access the target spot
     public boolean checkOwnKnight(Board board, Player player, Spot target) {
         List<Spot> spots = listKnightLocations(board, target);
-
+        // looping through spot in spots
         for (Spot spot : spots) {
             int spotFile = spot.getFile();
             int spotRow = spot.getRow();
+            // if spot is in board
             if ((spotFile < 8 && spotFile >= 0) && (spotRow < 8 && spotRow >= 0)) {
                 Piece piece = spot.getPiece();
+                // if the spot is occupied
                 if (piece != null) {
                     boolean sameColour = (piece.isWhite() == player.isWhite());
+                    // if occupied by player's knight
                     if (sameColour && piece.isKnight()) {
                         return true;
                     }
@@ -73,6 +79,7 @@ public class Spot {
         return false;
     }
 
+    // check the accessibility of the spot in the same row
     public boolean checkOwnRow(Board board, Player player, Spot target) {
         boolean isUpperProtected = checkAbove(board, player, target);
         boolean isLowerProtected = checkBelow(board, player, target);
@@ -82,10 +89,10 @@ public class Spot {
 
     // check if target spot is accessible from below
     public boolean checkBelow(Board board, Player player, Spot target) {
-        // if target is on row 0
+        // if target is on the most bottom row, then not accessible
         if (target.getRow() == 0)
             return false;
-        // target not on row 0
+        // target not on the most bottom row
         else {
             // for each row between target and row 0
             for (int row = target.getRow() - 1; row >= 0; row--) {
@@ -118,6 +125,7 @@ public class Spot {
 
     // check if target spot is accessible from above
     public boolean checkAbove(Board board, Player player, Spot target) {
+        // if target spot on the uppermost row, then not accessible
         if (target.getRow() == 7)
             return false;
         else {
@@ -148,28 +156,35 @@ public class Spot {
         return false;
     }
 
-    public boolean checkOwnFile(Board board, Player player, Spot king) {
-        boolean isLeftAccessible = checkLeft(board, player, king);
-        boolean isRightAccessible = checkRight(board, player, king);
+    // check the accessibility of the spot in the same file
+    public boolean checkOwnFile(Board board, Player player, Spot target) {
+        boolean isLeftAccessible = checkLeft(board, player, target);
+        boolean isRightAccessible = checkRight(board, player, target);
 
         return isLeftAccessible && isRightAccessible;
     }
 
     // check if target spot is accessible from left
     public boolean checkLeft(Board board, Player player, Spot target) {
+        // if target spot on the most left file, then not accessible
         if (target.getFile() == 0)
             return false;
         else {
+            // looping through the file between target and the most left row
             for (int file = target.getFile() - 1; file >= 0; file--) {
+                // if the spot is occupied
                 if (board.getBox(file, target.getRow()).getPiece() != null) {
                     Piece piece = board.getBox(file, target.getRow()).getPiece();
                     boolean sameColour = (piece.isWhite() == player.isWhite());
-
+                    // if occupied by opponent, then opponent blocks the path
                     if (!sameColour)
                         return false;
+                    // if occupied by player
                     else {
+                        // if the piece is a rook or a queen
                         if (piece.isRook() || piece.isQueen())
                             return true;
+                        // if not rook or queen, own piece blocks the path
                         else {
                             return false;
                         }
@@ -177,25 +192,32 @@ public class Spot {
                 }
             }
         }
+        // no other piece from the left
         return false;
     }
 
     // check if target spot is accessible from right
     public boolean checkRight(Board board, Player player, Spot target) {
+        // if target spot on the most right file, then not accessible
         if (target.getFile() == 7) {
             return false;
         }
         else {
+            // looping through the file between target and the most right row
             for (int file = target.getFile() + 1; file < 8; file++) {
+                // if the spot is occupied
                 if (board.getBox(file, target.getRow()).getPiece() != null) {
                     Piece piece = board.getBox(file, target.getRow()).getPiece();
                     boolean sameColour = (piece.isWhite() == player.isWhite());
-
+                    // if occupied by opponent, then opponent blocks the path
                     if (!sameColour)
                         return false;
+                    // if occupied by player
                     else {
+                        // if the piece is a rook or a queen
                         if (piece.isRook() || piece.isQueen())
                             return true;
+                        // if not rook or queen, own piece blocks the path
                         else {
                             return false;
                         }
@@ -203,12 +225,14 @@ public class Spot {
                 }
             }
         }
+        // no other piece from the right
         return false;
     }
 
     // check if target spot is accessible from upperLeft
     public boolean checkUpperLeftDiagonal(Board board, Player player, Spot target) {
         int file = target.getFile() - 1;
+        // if target spot on the most left file or the uppermost row, then not accessible
         if (target.getFile() == 0 || target.getRow() == 7)
             return false;
         else {
@@ -239,6 +263,7 @@ public class Spot {
     // check if target spot is accessible from upperRight
     public boolean checkUpperRightDiagonal(Board board, Player player, Spot target) {
         int file = target.getFile() + 1;
+        // if target spot on the most right file or uppermost row, then not accessible
         if (target.getFile() == 7 || target.getRow() == 7)
             return false;
         else {
@@ -270,6 +295,7 @@ public class Spot {
     // check if target spot is accessible from lowerLeft
     public boolean checkLowerLeftDiagonal(Board board, Player player, Spot target) {
         int file = target.getFile() - 1;
+        // if target spot on the most left file or the most bottom row, then not accessible
         if (target.getFile() == 0 || target.getRow() == 0)
             return false;
         else {
@@ -300,6 +326,7 @@ public class Spot {
     // check if target spot is accessible from lowerRight
     public boolean checkLowerRightDiagonal(Board board, Player player, Spot target) {
         int file = target.getFile() + 1;
+        // if target spot on the most right file or the most bottom row, then not accessible
         if (target.getFile() == 7 || target.getRow() == 0)
             return false;
         else {
@@ -327,6 +354,7 @@ public class Spot {
         return false;
     }
 
+    // put the possible spots of movement of knight into a list
     public List<Spot> listKnightLocations(Board board, Spot target) {
         int file = target.getFile();
         int row = target.getRow();
