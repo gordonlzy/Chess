@@ -9,30 +9,31 @@ public class Game {
 
         Player player1 = new Player(true, 4, 0, 16);
         Player player2 = new Player(false, 4, 7, 16);
-
-        System.out.println("\nTurn " + turn);
+        
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
+            System.out.println("\nTurn " + turn);
             boolean player1Finished = false;
             boolean player2Finished = false;
 
+            // while player 1 has not made a move
             while (!player1Finished) {
                 boolean whiteKingIsSafe = player1.notChecked(board);
 
-                // not checked
+                // if not checked
                 if (whiteKingIsSafe) {
-
+                    // if player 1 and player 2 both only have one piece left, then call a stalemate
                     if ((player1.getPiecesLeft() == 1) && (player2.getPiecesLeft() == 1)) {
                         System.out.println("Stalemate");
                         System.exit(0);
                     }
                     else {
-                        // make sure that player only moves his own pieces
+                        // prompt player 1 to choose a piece to move
                         System.out.println("\nPlayer one to move, enter the file and row of the piece you want to move");
                         int startFile = scanner.nextInt();
                         int startRow = scanner.nextInt();
-
+                        // make sure that player only moves his own pieces
                         while (board.getBox(startFile, startRow).getPiece().isWhite() != player1.isWhite()) {
                             System.out.println("Choose a white piece.");
                             System.out.println("Player one to move, enter the file and row of the piece you want to move");
@@ -46,6 +47,7 @@ public class Game {
 
                         player1Finished = player1.move(board, startFile, startRow, endFile, endRow);
 
+                        // if player 1 captured player 2 's piece, update the player 2 's number of pieces left
                         if (player1.captureOpponentPieces(board, player1, board.getBox(endFile, endRow))) {
                             player2.setPiecesLeft(player2.getPiecesLeft() - 1);
                         }
@@ -53,12 +55,16 @@ public class Game {
                 }
                 // checked
                 else {
+                    // check if player 1 is checkmated
                     if (player1.isCheckmated(board, player1) == true) {
+                        // if checkmated, terminate the game
                         System.out.println("Checkmate");
                         System.exit(0);
                     }
+                    // if not checkmated
                     else {
                         System.out.println("\nWhite Checked");
+                        // while white king is not safe, repeat the loop until player secures safety for his king
                         while (!whiteKingIsSafe) {
                             System.out.println("\nPlayer one to move, enter the file and row of the piece you want to move");
                             int startFile = scanner.nextInt();
@@ -84,9 +90,7 @@ public class Game {
                             whiteKingIsSafe = player1.notChecked(board);
                         }
                     }
-
                 }
-
             }
             board.printBoard();
 
@@ -126,13 +130,15 @@ public class Game {
 
                 // checked
                 else {
+                    // check if player 2 is checkmated
                     if (player2.isCheckmated(board, player2)) {
+                        // if checkmated, terminate
                         System.out.println("Checkmate");
                         System.exit(0);
                     }
                     else {
                         System.out.println("\nBlack Checked");
-
+                        // continue loop if black king is not safe
                         while (!blackKingIsSafe) {
                             System.out.printf("%nPlayer two to move, enter the file and row of the piece you want to move%n");
                             int startFile = scanner.nextInt();
@@ -161,7 +167,6 @@ public class Game {
                 }
             }
             board.printBoard();
-
             turn++;
         }
     }
