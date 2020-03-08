@@ -13,6 +13,7 @@ public class Player {
         this.piecesLeft = piecesLeft;
     }
 
+    // getters and setters
     public int getKingFile() {
         return kingFile;
     }
@@ -33,22 +34,28 @@ public class Player {
         return this.white == true;
     }
 
+    // return if the king is being checked
     public boolean notChecked(Board board) {
         Spot kingSpot = board.getBox(getKingFile(), getKingRow());
         Piece king = kingSpot.getPiece();
+        
         return king.isSafeFromOpponent(board, kingSpot);
     }
 
+    // move piece from start(startFile, startRow) to end(endFile, endRow) and return if the move is done
     public boolean move(Board board, int startFile, int startRow, int endFile, int endRow) {
         Spot start = board.getBox(startFile, startRow);
         Spot end = board.getBox(endFile, endRow);
         Piece piece = start.getPiece();
         boolean doneMove = false;
 
+        // if piece can castle and is safe from opponent after castling
         if (piece.canCastle(board, start, end) && piece.isSafeFromOpponent(board, end)) {
+            // update king's file and row
             setKingFile(end.getFile());
             setKingRow(end.getRow());
 
+            // perform castling
             castle(board, startFile, startRow, endFile, endRow);
 
             doneMove = true;
@@ -57,15 +64,19 @@ public class Player {
         else {
             // piece is king
             if (piece.isKing()) {
+                // king can move and the end spot is safe from opponent
                 if ((piece.canMove(board, start, end)) && piece.isSafeFromOpponent(board, end)) {
+                    // update king's file and row
                     setKingFile(end.getFile());
                     setKingRow(end.getRow());
 
+                    // update piece locations
                     end.setPiece(piece);
                     start.setPiece(null);
 
                     doneMove = true;
                 }
+                // move is not safe
                 else {
                     System.out.println("Illegal Move. Please try again.");
                 }
@@ -73,9 +84,11 @@ public class Player {
             // piece is not king
             else {
                 if (piece.canMove(board, start, end)) {
+                    // update piece location
                     end.setPiece(piece);
                     start.setPiece(null);
 
+                    // if piece can promote, then promote
                     if (piece.canPromote(end)) {
                         promote(piece, end);
                     }
@@ -90,6 +103,7 @@ public class Player {
         return doneMove;
     }
 
+    // perform castling
     public void castle(Board board, int startFile, int startRow, int endFile, int endRow) {
         Spot start = board.getBox(startFile, startRow);
         Spot end = board.getBox(endFile, endRow);
