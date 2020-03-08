@@ -17,7 +17,7 @@ public abstract class Piece {
         this.white = white;
     }
     
-    // abstract method to move a piece
+    // abstract method to check if a piece can move
     public abstract boolean canMove(Board board, Spot start, Spot end);
     
     // abstract method to get name of the piece
