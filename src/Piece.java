@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
-
+// crate abstract class piece
 public abstract class Piece {
     private boolean white;
     private boolean notMoved = true;
@@ -16,23 +16,29 @@ public abstract class Piece {
     public void setWhite(boolean white) {
         this.white = white;
     }
-
+    
+    // abstract method to move a piece
     public abstract boolean canMove(Board board, Spot start, Spot end);
-
+    
+    // abstract method to get name of the piece
     public abstract String getName();
-
+    
+    // to be inherited and overwritten by king or rook to check if they have moved
     public boolean hasNotMoved() {
         return this.notMoved == true;
     }
-
+    
+    // to be inherited and overwritten by pawn to check if pawn can promote
     public boolean canPromote(Spot end) {
         return false;
     }
-
+    
+    // to be inherited and overwritten by king to check if king can castle
     public boolean canCastle(Board board, Spot start, Spot end) {
         return false;
     }
-
+    
+    // to determine the identity of each piece when method is called
     public boolean isKing() {return false;}
 
     public boolean isQueen() {return false;}
@@ -44,11 +50,12 @@ public abstract class Piece {
     public boolean isRook() {return false;}
 
     public boolean isPawn() {return false;}
-
+    
+    // checking all directions to determine if a spot is safe to move to from opponent pieces
     public boolean isSafeFromOpponent(Board board, Spot end) {
-        // check file
+        // check file (up and down)
         boolean isFileSafe = checkOpponentFile(board, end);
-        // check row
+        // check row (left and right)
         boolean isRowSafe = checkOpponentRow(board, end);
         // check all diagonals
         boolean isUpperLeftSafe = checkOpponentUpperLeftDiagonal(board, end);
@@ -61,14 +68,17 @@ public abstract class Piece {
         return  ((isFileSafe) && (isRowSafe) && (isUpperLeftSafe) && (isUpperRightSafe) &&
                 (isLowerLeftSafe) && (isLowerRightSafe) && (isKnightSafe));
     }
-
+    
+    // to be inherited and overwritten to see if a piece can still move
     public boolean canStillMove(Board board, Spot currentSpot) {
         return true;
     }
-
+    
+    // add the possible spots that a knight can move to a list from target, provided that the spot is in the board
     public List<Spot> listKnightLocations(Board board, Spot target) {
         int file = target.getFile();
         int row = target.getRow();
+        // create a list called spots to store knight's spots
         List<Spot> spots = new ArrayList<>();
 
         if (((file - 1) >= 0) && ((row - 2) >= 0)) {
@@ -106,19 +116,24 @@ public abstract class Piece {
         return spots;
     }
 
+    // for spots stored in the list see if there is an opponent knight that can threaten the target spot
     public boolean checkOpponentKnight(Board board, Spot target) {
         List<Spot> spots = listKnightLocations(board, target);
 
         for (Spot spot : spots) {
             int spotFile = spot.getFile();
             int spotRow = spot.getRow();
+            // if spot is in the board
             if ((spotFile < 8 && spotFile >= 0) && (spotRow < 8 && spotRow >= 0)) {
                 Piece piece = spot.getPiece();
+                // if the spot is not empty
                 if (piece != null) {
                     boolean sameColour = (piece.isWhite() == this.isWhite());
+                    // if the spot has a knight that belongs to the opponent
                     if (!sameColour && piece.isKnight()) {
                         return false;
                     }
+                    // if the spot doesn't have a knight that belongs to the opponent
                     else
                         return true;
                 }
@@ -128,7 +143,8 @@ public abstract class Piece {
         }
         return true;
     }
-
+    
+    // check above and below the target spot
     public boolean checkOpponentRow(Board board, Spot target) {
         boolean isUpperSafe = checkOpponentUpperRow(board, target);
         boolean isLowerSafe = checkOpponentLowerRow(board, target);
@@ -136,19 +152,27 @@ public abstract class Piece {
         return isUpperSafe && isLowerSafe;
     }
 
+    // check below
     public boolean checkOpponentLowerRow(Board board, Spot target) {
+        // if target spot is on the most bottom row then safe from opponent
         if (target.getRow() == 0)
             return true;
         else {
+            // for rows between the target spot and the most bottom row
             for (int row = target.getRow() - 1; row >= 0; row--) {
+                // if the spot being looped is not empty
                 if (board.getBox(target.getFile(), row).getPiece() != null) {
                     Piece piece = board.getBox(target.getFile(), row).getPiece();
                     boolean sameColour = piece.isWhite() == this.isWhite();
+                    // there is a piece that belongs to player to block, then the target spot is safe
                     if (sameColour)
                         return true;
+                    // there is a piece that belongs to opponent
                     else {
+                        // if the piece is not a rook or not a queen, then still safe
                         if (!(piece.isRook() || piece.isQueen()))
                             return true;
+                        // if not, then not safe
                         else {
                             return false;
                         }
@@ -156,22 +180,31 @@ public abstract class Piece {
                 }
             }
         }
+        // if after looping through and cannot find a spot that is occupied, then safe
         return true;
     }
 
+    // check above
     public boolean checkOpponentUpperRow(Board board, Spot target) {
+        // if piece on the uppermost row, then safe from above
         if (target.getRow() == 7)
             return true;
         else {
+            // for rows between the target spot and the uppermost row
             for (int row = target.getRow() + 1; row < 8; row++) {
+                // if the spot being looped is not empty
                 if (board.getBox(target.getFile(), row).getPiece() != null) {
                     Piece piece = board.getBox(target.getFile(), row).getPiece();
                     boolean sameColour = piece.isWhite() == this.isWhite();
+                    // there is a piece that belongs to player to block, then the target spot is safe
                     if (sameColour)
                         return true;
+                    // there is a piece that belongs to opponent
                     else {
+                        // if the piece is not a rook or not a queen, then still safe
                         if (!(piece.isRook() || piece.isQueen()))
                             return true;
+                        // if not, then not safe
                         else {
                             return false;
                         }
@@ -179,9 +212,11 @@ public abstract class Piece {
                 }
             }
         }
+        // if after looping through and cannot find a spot that is occupied, then safe
         return true;
     }
 
+    // check left and right
     public boolean checkOpponentFile(Board board, Spot king) {
         boolean isLeftSafe = checkOpponentLeftFile(board, king);
         boolean isRightSafe = checkOpponentRightFile(board, king);
@@ -189,20 +224,27 @@ public abstract class Piece {
         return isLeftSafe && isRightSafe;
     }
 
+    // check left
     public boolean checkOpponentLeftFile(Board board, Spot target) {
+        // if target on the most left file then safe
         if (target.getFile() == 0)
             return true;
         else {
+            // for files between the target spot and the most left file
             for (int file = target.getFile() - 1; file >= 0; file--) {
+                // if the spot being looped is not empty
                 if (board.getBox(file, target.getRow()).getPiece() != null) {
                     Piece piece = board.getBox(file, target.getRow()).getPiece();
                     boolean sameColour = (piece.isWhite() == this.isWhite());
-
+                    // there is a piece that belongs to player to block, then the target spot is safe
                     if (sameColour)
                         return true;
+                    // there is a piece that belongs to opponent
                     else {
+                        // if the piece is not a rook or not a queen, then still safe
                         if (!(piece.isRook() || piece.isQueen()))
                             return true;
+                        // if not, then not safe
                         else {
                             return false;
                         }
@@ -210,24 +252,32 @@ public abstract class Piece {
                 }
             }
         }
+        // if after looping through and cannot find a spot that is occupied, then safe
         return true;
     }
-
+    
+    // check right
     public boolean checkOpponentRightFile(Board board, Spot target) {
+        // if target on the most right file then safe
         if (target.getFile() == 7) {
             return true;
         }
         else {
+            // for files between the target spot and the most right file
             for (int file = target.getFile() + 1; file < 8; file++) {
+                // if the spot being looped is not empty
                 if (board.getBox(file, target.getRow()).getPiece() != null) {
                     Piece piece = board.getBox(file, target.getRow()).getPiece();
                     boolean sameColour = (piece.isWhite() == this.isWhite());
-
+                    // there is a piece that belongs to player to block, then the target spot is safe
                     if (sameColour)
                         return true;
+                    // there is a piece that belongs to opponent
                     else {
+                        // if the piece is not a rook or not a queen, then still safe
                         if (!(piece.isRook() || piece.isQueen()))
                             return true;
+                        // if not, then not safe
                         else {
                             return false;
                         }
@@ -235,14 +285,18 @@ public abstract class Piece {
                 }
             }
         }
+        // if after looping through and cannot find a spot that is occupied, then safe
         return true;
     }
 
+    // check upper left diagonal
     public boolean checkOpponentUpperLeftDiagonal(Board board, Spot target) {
         int file = target.getFile() - 1;
-        if (target.getFile() == 0)
+        // if target is on the most left file or uppermost row, then safe
+        if (target.getFile() == 0 || target.getRow() == 7)
             return true;
         else {
+            // looping through each spot in the upper left diagonal
             for (int row = target.getRow() + 1; row < 8; row++) {
                 if (board.getBox(file, row).getPiece() != null) {
                     Piece piece = board.getBox(file, row).getPiece();
@@ -288,11 +342,14 @@ public abstract class Piece {
         return true;
     }
 
+    // check upper right diagonal
     public boolean checkOpponentUpperRightDiagonal(Board board, Spot target) {
         int file = target.getFile() + 1;
-        if (target.getFile() == 7)
+        // if target is on the most right file or the uppermost row, then safe
+        if (target.getFile() == 7 || target.getRow() == 7)
             return true;
         else {
+            // looping through each spot in the upper right diagonal
             for (int row = target.getRow() + 1; row < 8; row++) {
                 if (board.getBox(file, row).getPiece() != null) {
                     Piece piece = board.getBox(file, row).getPiece();
@@ -339,11 +396,14 @@ public abstract class Piece {
         return true;
     }
 
+    // check lower left diagonal
     public boolean checkOpponentLowerLeftDiagonal(Board board, Spot target) {
         int file = target.getFile() - 1;
-        if (target.getFile() == 0)
+        // if target is on the most left file or the most bottom row, then safe
+        if (target.getFile() == 0 || target.getRow == 0)
             return true;
         else {
+            // looping through each spot in the lower left diagonal
             for (int row = target.getRow() - 1; row >= 0; row--) {
                 if (board.getBox(file, row).getPiece() != null) {
                     Piece piece = board.getBox(file, row).getPiece();
@@ -389,11 +449,14 @@ public abstract class Piece {
         return true;
     }
 
+    // check lower right diagonal
     public boolean checkOpponentLowerRightDiagonal(Board board, Spot target) {
         int file = target.getFile() + 1;
-        if (target.getFile() == 7)
+        // if target is on the most right file or the most bottom row, then safe
+        if (target.getFile() == 7 || target.getRow == 0)
             return true;
         else {
+            // looping through each spot in the lower right diagonal
             for (int row = target.getRow() - 1; row >= 0; row--) {
                 if (board.getBox(file, row).getPiece() != null) {
                     Piece piece = board.getBox(file, row).getPiece();
